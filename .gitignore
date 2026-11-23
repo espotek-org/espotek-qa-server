@@ -1,0 +1,7 @@
+.venv/
+__pycache__/
+*.pyc
+# Host-local state; never commit (contains secrets and machine specifics)
+config.toml
+*.env
+work/

@@ -1,0 +1,21 @@
+# Host config for a QA tester; bootstrap.sh copies this to
+# /Users/Shared/espotek-qa/config.toml (mode 600) on first run. Every key is required.
+
+[release]
+repo = "espotek-org/labrador"
+tag = "unified-continuous"
+
+[board]
+lock = "/Users/Shared/labrador-board.lock"
+# App firmware, Atmel DFU bootloader, legacy: the board re-enumerates during flashing.
+usb_ids = ["03eb:ba94", "03eb:2fe4", "03eb:a000"]
+
+[run]
+# linux and windows run in QEMU VMs; macos runs natively in the qamac account.
+platforms = ["linux", "windows", "macos"]
+
+[vm]
+memory_mb = 4096
+cpus = 4
+qemu_prefix = "/opt/local"
+windows_password = "{{WINDOWS_PASSWORD}}"

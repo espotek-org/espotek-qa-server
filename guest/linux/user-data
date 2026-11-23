@@ -1,0 +1,61 @@
+#cloud-config
+# Golden image provisioning for the Linux QA guest (Ubuntu 24.04 cloud image).
+# {{SSH_PUBKEY}} is filled in by `qa vm build linux`.
+hostname: qa-linux
+users:
+  - name: qa
+    gecos: Labrador QA
+    groups: [sudo, plugdev, video, audio, dialout]
+    shell: /bin/bash
+    sudo: "ALL=(ALL) NOPASSWD:ALL"
+    lock_passwd: true
+    ssh_authorized_keys:
+      - {{SSH_PUBKEY}}
+ssh_pwauth: false
+package_update: true
+package_upgrade: true
+packages:
+  # A real X session on the VM's virtual screen, so the app opens a normal
+  # window and the host's screendumps show exactly what a user would see.
+  - xserver-xorg-core
+  - xserver-xorg-input-libinput
+  - lightdm
+  - lightdm-gtk-greeter
+  - openbox
+  - x11-xserver-utils
+  - x11-utils
+  - mesa-utils
+  - libgl1-mesa-dri
+  - libegl1
+  # Every desktop install has GLVND's libOpenGL; AppImages rely on the host for it.
+  # (The .deb's own dependencies are checked separately, by the dep-closure check.)
+  - libopengl0
+  # AppImages need FUSE 2.
+  - libfuse2t64
+  - usbutils
+  - curl
+  - ca-certificates
+write_files:
+  - path: /etc/lightdm/lightdm.conf.d/50-qa-autologin.conf
+    content: |
+      [Seat:*]
+      autologin-user=qa
+      autologin-user-timeout=0
+      autologin-session=openbox
+  # Runs must be reproducible: no background upgrades mid-test.
+  - path: /etc/apt/apt.conf.d/99-qa-no-auto-upgrades
+    content: |
+      APT::Periodic::Update-Package-Lists "0";
+      APT::Periodic::Unattended-Upgrade "0";
+  # No screen blanking during long soak tests, and a coloured background so a
+  # screendump of an empty desktop is distinguishable from a dead display.
+  - path: /home/qa/.config/openbox/autostart
+    owner: qa:qa
+    defer: true
+    content: |
+      xset s off -dpms
+      xsetroot -solid '#2f4858'
+runcmd:
+  - systemctl disable --now unattended-upgrades.service apt-daily.timer apt-daily-upgrade.timer
+  - systemctl set-default graphical.target
+  - systemctl start lightdm

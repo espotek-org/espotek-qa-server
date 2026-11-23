@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<h1>Runs</h1>
+<p class="muted">Each run installs one release in fresh environments with a real Labrador attached, then runs the installed app's own <code>--auto-qa</code>. The newest run is first.</p>
+{% if not runs %}
+<div class="panel" style="padding: 20px;">No runs yet.</div>
+{% else %}
+<div class="panel scroll"><table>
+  <tr><th>Run</th><th>Release</th><th>Result</th><th>Targets</th><th class="hide-sm">Started (UTC)</th></tr>
+  {% for r in runs %}
+  <tr>
+    <td><a class="mono" href="/runs/{{ r.run_id }}">{{ r.run_id }}</a></td>
+    <td><span class="mono">{{ r.tag }}</span> @ <a class="mono" href="https://github.com/espotek-org/labrador/commit/{{ r.commit }}">{{ r.commit[:7] }}</a></td>
+    <td>{% if r.status != 'done' %}<span class="pill running">running</span>{% else %}<span class="pill {{ r.result }}">{{ r.result }}</span>{% endif %}</td>
+    <td>{% for t in r.targets %}
+      <a href="/runs/{{ r.run_id }}/{{ t.id }}" class="pill {{ t.result or 'pending' }}" title="{% if t.counts %}{{ t.counts.pass }} passed, {{ t.counts.fail }} failed, {{ t.counts.error }} errors, {{ t.counts.skip }} skipped{% endif %}">{{ t.id }}</a>
+    {% endfor %}</td>
+    <td class="hide-sm mono">{{ r.started_at[:16].replace('T', ' ') }}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+{% endif %}
+{% endblock %}

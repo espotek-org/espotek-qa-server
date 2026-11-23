@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.id }} · {{ run.run_id }}{% endblock %}
+{% block head %}<meta http-equiv="refresh" content="30">{% endblock %}
+{% block body %}
+<p><a href="/runs/{{ run.run_id }}">← Run {{ run.run_id }}</a></p>
+<h1>{{ entry.id }} <span class="pill {{ 'running' if entry.status == 'running' else 'pending' }}">{{ entry.status }}</span></h1>
+<p class="muted">This target hasn't finished yet. The page refreshes every 30 seconds.</p>
+{% endblock %}

@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block title %}{{ entry.id }} · {{ run.run_id }}{% endblock %}
+{% macro f(p) %}/files/{{ run.run_id }}/{{ entry.id }}/{{ p }}{% endmacro %}
+{% block body %}
+<p><a href="/runs/{{ run.run_id }}">← Run {{ run.run_id }}</a></p>
+<h1>{{ entry.id }} <span class="pill {{ report.result }}">{{ report.result }}</span></h1>
+<p class="muted">
+  {{ report.counts.pass }} passed, {{ report.counts.fail }} failed, {{ report.counts.error }} errors, {{ report.counts.skip }} skipped.
+  Asset <span class="mono">{{ report.asset }}</span>{% if report.auto_qa %}, app {{ report.auto_qa.app.version }} on {{ report.auto_qa.platform.os }} {{ report.auto_qa.platform.os_version }} ({{ report.auto_qa.platform.arch }}), firmware {{ report.auto_qa.app.firmware }}{% endif %}.
+  {% if entry.message %}<br><b>{{ entry.message }}</b>{% endif %}
+</p>
+<p class="muted">Logs:
+  <a href="{{ f('logs/install.log') }}">install</a> ·
+  <a href="{{ f('logs/auto-qa.log') }}">app output</a> ·
+  <a href="{{ f('auto-qa/progress.log') }}">--auto-qa progress</a> ·
+  <a href="{{ f('logs/serial.log') }}">serial console</a> ·
+  <a href="{{ f('logs/qemu.log') }}">qemu</a> ·
+  {% if entry.result == 'error' %}<a href="{{ f('logs/error.txt') }}"><b>traceback</b></a> ·{% endif %}
+  <a href="{{ f('report.json') }}">report.json</a></p>
+
+<h2>Tests</h2>
+<div class="panel scroll"><table>
+  <tr><th>Status</th><th>Test</th><th>Details</th><th class="hide-sm">Time</th></tr>
+  {% for t in tests %}
+  <tr>
+    <td><span class="pill {{ t.status }}">{{ t.status }}</span></td>
+    <td><div>{{ t.title }}</div><div class="mono muted" style="font-size: .78rem;">{{ t.id }}</div></td>
+    <td>
+      {% if t.message %}<p class="msg">{{ t.message }}</p>{% endif %}
+      {% if t.measurements %}<table class="meas">
+        {% for m in t.measurements %}
+        {% set bad = (m.min is not none and m.value < m.min) or (m.max is not none and m.value > m.max) %}
+        <tr><td>{{ m.name }}</td><td class="mono {{ 'out-of-range' if bad }}">{{ m.value }} {{ m.unit }}</td>
+            <td class="muted mono">expected {{ m.expected }}{% if m.min is not none %}, {{ m.min }}…{{ m.max }}{% endif %}</td></tr>
+        {% endfor %}
+      </table>{% endif %}
+      {% for a in t.artifacts %}
+        {% if a.kind == 'png' %}<a href="{{ f(a.path) }}"><img src="{{ f(a.path) }}" alt="{{ a.caption }}" loading="lazy" style="max-width: 360px; width: 100%; border-radius: 4px; margin-top: 6px; display: block;"></a>
+        {% else %}<a href="{{ f(a.path) }}">{{ a.caption or a.path }}</a><br>{% endif %}
+      {% endfor %}
+    </td>
+    <td class="hide-sm mono muted">{{ '%.1f' % t.duration_s }}s</td>
+  </tr>
+  {% endfor %}
+</table></div>
+
+{% if report.screenshots %}
+<h2>App screenshots</h2>
+<p class="muted">Frames the app rendered during <code>--auto-qa</code>. Each one says what a correct render should show, so check it against that.</p>
+<div class="grid">
+  {% for s in report.screenshots %}
+  <figure class="panel shot">
+    <a href="{{ f(s.path) }}"><img src="{{ f(s.path) }}" alt="{{ s.caption }}" loading="lazy"></a>
+    <figcaption><b>{{ s.caption }}</b><div class="expect">Should show: {{ s.expect }}</div><div class="mono muted" style="font-size: .75rem;">{{ s.id }}</div></figcaption>
+  </figure>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if screens %}
+<h2>VM display over time</h2>
+<p class="muted">Host-side captures of the whole VM screen every 20 seconds, each labelled with the latest <code>--auto-qa</code> progress line. These show OS dialogs or crashes that the app's own frames can't.</p>
+<div class="timeline">
+  {% for s in screens %}
+  <figure><a href="{{ f(s.path) }}"><img src="{{ f(s.path) }}" alt="VM screen at {{ s.t_s }}s" loading="lazy"></a>
+    <figcaption>{{ s.t_s }}s · {{ s.caption }}</figcaption></figure>
+  {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

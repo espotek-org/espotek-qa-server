@@ -1,0 +1,33 @@
+Labrador QA results: notes for agents
+
+Authenticate every request with HTTP Basic auth: any username, and the
+results password as the password, for example
+  curl -u qa:$QA_RESULTS_PASSWORD https://{{ host }}/api/runs/latest
+
+Endpoints (all JSON):
+  /api/runs                  every run, newest first, with per-target results
+  /api/runs/latest           the newest run's run.json
+  /api/runs/<run_id>         one run.json: release, targets[]
+  /api/runs/<run_id>/<target>  that target's merged report: tests[], screenshots[], vm_screens[]
+
+Files: /files/<run_id>/<target>/<path> serves any artifact named in a
+report (paths in report.json are relative to /files/<run_id>/<target>/).
+Logs live at logs/install.log, logs/auto-qa.log (the app's output),
+auto-qa/progress.log, logs/serial.log and logs/qemu.log.
+
+How to review a run:
+1. Start from /api/runs/latest. A target whose result isn't "pass" has
+   tests with status "fail" or "error" (install.* come from the server,
+   the rest from the app's --auto-qa); their message, measurements (value,
+   expected, min, max) and artifacts (CSV captures, waveform plots) explain why.
+2. Look at every entry in screenshots[]. Each has an "expect" field saying
+   what a correct render shows. Compare the image with it, and flag cut-off
+   or overlapping text, blank or garbled areas, wrong colours for the theme,
+   a flat line where a waveform should be, and error dialogs.
+3. vm_screens[] are captures of the whole VM display every 20 seconds, with
+   the latest --auto-qa progress line as the caption. Use them to spot OS-level
+   dialogs (driver prompts, crash reporters, permission requests) that a
+   test run can't see from inside the app.
+4. A target with result "error" means the run itself broke (VM, install, or
+   --auto-qa crashed, hung or isn't supported by that build); read its message
+   and logs/auto-qa.log first.

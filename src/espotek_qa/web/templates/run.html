@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block title %}{{ run.run_id }} · Labrador QA{% endblock %}
+{% block head %}{% if run.status != 'done' %}<meta http-equiv="refresh" content="30">{% endif %}{% endblock %}
+{% block body %}
+<p><a href="/">← All runs</a></p>
+<h1 class="mono">{{ run.run_id }}
+  {% if run.status != 'done' %}<span class="pill running">running</span>{% else %}<span class="pill {{ run.result }}">{{ run.result }}</span>{% endif %}</h1>
+<p class="muted">
+  Release <span class="mono">{{ run.release.tag }}</span> ({{ run.release.name }}) at
+  <a class="mono" href="https://github.com/espotek-org/labrador/commit/{{ run.release.commit }}">{{ run.release.commit[:12] }}</a>,
+  published {{ run.release.published_at[:10] }}.
+  Started {{ run.started_at.replace('T', ' ') }}{% if run.finished_at %}, finished {{ run.finished_at.replace('T', ' ') }}{% endif %}.
+</p>
+
+<h2>Targets</h2>
+<div class="panel scroll"><table>
+  <tr><th>Target</th><th>Asset</th><th>Result</th><th>Tests</th><th>Notes</th></tr>
+  {% for t in run.targets %}
+  <tr>
+    <td><a href="/runs/{{ run.run_id }}/{{ t.id }}">{{ t.id }}</a></td>
+    <td class="mono">{{ t.asset }}</td>
+    <td>{% if t.status != 'done' %}<span class="pill {{ 'running' if t.status == 'running' else 'pending' }}">{{ t.status }}</span>{% else %}<span class="pill {{ t.result }}">{{ t.result }}</span>{% endif %}</td>
+    <td>{% if t.counts %}{{ t.counts.pass }} passed{% if t.counts.fail %}, <b>{{ t.counts.fail }} failed</b>{% endif %}{% if t.counts.error %}, <b>{{ t.counts.error }} errors</b>{% endif %}{% if t.counts.skip %}, {{ t.counts.skip }} skipped{% endif %}{% endif %}</td>
+    <td class="msg">{{ t.message }}</td>
+  </tr>
+  {% endfor %}
+</table></div>
+
+<h2>Release assets</h2>
+<div class="panel scroll"><table>
+  <tr><th>Asset</th><th>Size</th><th class="hide-sm">sha256</th><th class="hide-sm">Updated</th></tr>
+  {% for name, a in run.release.assets.items() %}
+  <tr><td class="mono">{{ name }}</td><td>{{ (a.size / 1e6) | round(1) }} MB</td><td class="mono hide-sm">{{ a.sha256[:16] }}…</td><td class="hide-sm mono">{{ a.updated_at[:16].replace('T', ' ') }}</td></tr>
+  {% endfor %}
+</table></div>
+<p class="muted" style="margin-top: 20px;">Raw data: <a href="/files/{{ run.run_id }}/run.json">run.json</a></p>
+{% endblock %}

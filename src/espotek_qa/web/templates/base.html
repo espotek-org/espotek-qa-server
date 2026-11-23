@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{% block title %}Labrador QA{% endblock %}</title>
+<style>
+:root {
+  --bg: #f6f7f9; --panel: #ffffff; --text: #1b1f24; --muted: #5d6673; --line: #dde1e6;
+  --pass: #1a7f37; --pass-bg: #dafbe1; --fail: #cf222e; --fail-bg: #ffebe9;
+  --warn: #9a6700; --warn-bg: #fff8c5; --run: #0969da; --run-bg: #ddf4ff; --accent: #0969da;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0d1117; --panel: #161b22; --text: #e6edf3; --muted: #8d96a0; --line: #30363d;
+    --pass: #3fb950; --pass-bg: #12261a; --fail: #f85149; --fail-bg: #2d1416;
+    --warn: #d29922; --warn-bg: #2b2111; --run: #58a6ff; --run-bg: #0c2337; --accent: #58a6ff;
+  }
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text);
+  font: 15px/1.5 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+header { background: var(--panel); border-bottom: 1px solid var(--line); }
+header .wrap { display: flex; align-items: center; gap: 16px; padding-top: 12px; padding-bottom: 12px; }
+header .brand { font-weight: 650; color: var(--text); }
+header form { margin-left: auto; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 16px; }
+main.wrap { padding-top: 20px; padding-bottom: 48px; }
+h1 { font-size: 1.45rem; margin: 0 0 4px; } h2 { font-size: 1.1rem; margin: 28px 0 10px; }
+.muted { color: var(--muted); } code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: .9em; }
+.panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; }
+table { width: 100%; border-collapse: collapse; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: .8rem; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); font-weight: 600; }
+tr:last-child td { border-bottom: 0; }
+.pill { display: inline-block; padding: 1px 9px; border-radius: 999px; font-size: .8rem; font-weight: 600; white-space: nowrap; }
+.pass { color: var(--pass); background: var(--pass-bg); }
+.fail, .error { color: var(--fail); background: var(--fail-bg); }
+.skip, .pending { color: var(--warn); background: var(--warn-bg); }
+.running { color: var(--run); background: var(--run-bg); }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+.shot { margin: 0; padding: 10px; }
+.shot img { width: 100%; height: auto; border-radius: 4px; border: 1px solid var(--line); display: block; background: #000; }
+.shot figcaption { font-size: .85rem; margin-top: 8px; }
+.shot .expect { color: var(--muted); margin-top: 4px; }
+.meas { font-size: .85rem; } .meas td { padding: 2px 8px 2px 0; border: 0; }
+.out-of-range { color: var(--fail); font-weight: 600; }
+.msg { white-space: pre-wrap; font-family: ui-monospace, Menlo, monospace; font-size: .82rem; margin: 4px 0 0; }
+details summary { cursor: pointer; }
+.scroll { overflow-x: auto; }
+button { font: inherit; padding: 4px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--text); cursor: pointer; }
+.timeline { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
+.timeline figure { flex: 0 0 220px; margin: 0; }
+.timeline img { width: 220px; border-radius: 4px; border: 1px solid var(--line); display: block; }
+.timeline figcaption { font-size: .75rem; color: var(--muted); margin-top: 4px; word-break: break-word; }
+@media (max-width: 640px) { .hide-sm { display: none; } th, td { padding: 6px; } }
+</style>
+{% block head %}{% endblock %}
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="/">Labrador QA results</a>
+  <span class="muted hide-sm">automatic release testing on real hardware</span>
+  {% if session.get('authed') %}<form method="post" action="/logout"><button>Log out</button></form>{% endif %}
+</div></header>
+<main class="wrap">{% block body %}{% endblock %}</main>
+</body>
+</html>

@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block title %}Log in · Labrador QA{% endblock %}
+{% block body %}
+<div class="panel" style="max-width: 380px; margin: 60px auto; padding: 24px;">
+  <h1>Log in</h1>
+  <p class="muted">These are the EspoTek Labrador release QA results.</p>
+  {% if error %}<p class="pill fail" style="border-radius: 6px; padding: 6px 10px;">{{ error }}</p>{% endif %}
+  <form method="post">
+    <input type="hidden" name="next" value="{{ next }}">
+    <label for="pw">Password</label><br>
+    <input id="pw" name="password" type="password" autofocus required
+           style="width: 100%; padding: 8px; margin: 6px 0 14px; font: inherit; border-radius: 6px; border: 1px solid var(--line); background: var(--bg); color: var(--text);">
+    <button type="submit">Log in</button>
+  </form>
+  <p class="muted" style="font-size: .85rem; margin-top: 18px;">Agents can use HTTP Basic auth with the same password; see <code>/agents</code> after logging in.</p>
+</div>
+{% endblock %}
