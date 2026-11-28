@@ -16,6 +16,36 @@ passwords or tunnel credentials; those live in the host's local config
 (`/Users/Shared/espotek-qa/config.toml` and the `qaweb` account's home), which
 `bootstrap.sh` creates.
 
+## HARD CONSTRAINT: waveform tests MUST run at exactly 831 Hz (owner, 2026-11-28)
+
+This is not a guideline, and it is not up for reinterpretation when tests are
+added, rewritten or refactored. It was acknowledged once and then broken by
+the next batch of new tests; that must not happen again.
+
+- The `--auto-qa` suite MUST contain a battery of waveform tests driven at
+  **exactly 831 Hz** (`831.0`, not "about 800 Hz", not 830 or 833). At
+  831 Hz the battery covers every generator wave shape (sine, square,
+  triangle, sawtooth) on both SG1→CH1 and SG2→CH2 (frequency, levels and
+  shape), the scope gains, the triggers, and the per-transport measure
+  tests. When a new waveform test is added, an 831 Hz version of it is added
+  with it.
+- "Normal" frequencies (500 Hz, 1 kHz, 2 kHz, 4 kHz, 10 kHz, and any other
+  whose period divides evenly into the 1 ms USB frame / 375-sample frame)
+  MASK dropped and misaligned packets. The waveform repeats exactly every
+  frame, so a lost frame that librador back-fills with the previous one, or
+  an endpoint a frame out of step, looks identical to a clean capture and
+  the test passes (FINDINGS.md: "only an odd frequency shows it", "Lost
+  frames make every signal read as 1 kHz"). At 831 Hz the period is
+  1.2034 ms (451.26 samples at 375 kS/s), so a dropped, repeated or shifted
+  frame shows up as a kink, a step, a wrong pulse width or a wrong cycle
+  count.
+- Tests at other frequencies (sweeps, 2 kHz baselines, the 354.1 / 1234.5 Hz
+  soak, the 891 / 557 Hz screenshot tour) are allowed in addition. They never
+  replace the 831 Hz battery or count towards it.
+- Before reporting any change to the suite as done, check that the 831 Hz
+  battery is still present and runs on every target, and say so in the
+  report. A suite without it is unfinished, not "done with a caveat".
+
 ## How a run works
 
 1. `qa poll` (launchd, every 15 min) asks the GitHub API for the
